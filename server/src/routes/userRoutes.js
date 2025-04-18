@@ -1,8 +1,7 @@
 const express = require('express');
-const { registerUser, loginUser, getMe } = require('../controllers/userController');
-const { protect } = require('../utils/auth');
-const upload = require('../utils/fileUpload');
-
+const { registerUser, loginUser, getMe, updateProfile, updatePassword, forgotPassword, resetPassword, uploadProfileImage } = require('../controllers/userController');
+const { protect } = require('../middlewares/auth');
+const upload = require('../middlewares/fileUpload');
 const router = express.Router();
 
 router.post('/register', registerUser);

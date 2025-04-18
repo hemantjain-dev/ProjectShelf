@@ -3,7 +3,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const { connectDB } = require('./config/database');
-const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
+const { apiLimiter, authLimiter } = require('./middlewares/rateLimiter');
+const { swaggerUi, swaggerDocs } = require('./config/swagger');
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
@@ -31,6 +32,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(cookieParser());
 app.use(morgan('dev'));
+
+// We have to Add this after your middleware setup but before your routes for the Swagger UI to work correctly.
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Apply rate limiting to all routes
 app.use('/api', apiLimiter);

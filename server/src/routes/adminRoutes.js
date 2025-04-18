@@ -6,7 +6,7 @@ const {
     deleteUser,
     getReportedContent
 } = require('../controllers/adminController');
-const { protect, authorize } = require('../utils/auth');
+const { protect, authorize } = require('../middlewares/auth');
 
 const router = express.Router();
 

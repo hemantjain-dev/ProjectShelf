@@ -1,4 +1,4 @@
-const User = require('../models/user.model');
+const UserModel = require('../models');
 
 // @desc    Register user
 // @route   POST /api/users/register
@@ -8,7 +8,7 @@ exports.registerUser = async (req, res, next) => {
         const { name, email, password } = req.body;
 
         // Check if user already exists
-        const userExists = await User.findOne({ email });
+        const userExists = await UserModel.findOne({ email });
         if (userExists) {
             return res.status(400).json({
                 success: false,
@@ -17,7 +17,7 @@ exports.registerUser = async (req, res, next) => {
         }
 
         // Create user
-        const user = await User.create({
+        const user = await UserModel.create({
             name,
             email,
             password
@@ -57,7 +57,7 @@ exports.loginUser = async (req, res, next) => {
         }
 
         // Check for user
-        const user = await User.findOne({ email }).select('+password');
+        const user = await UserModel.findOne({ email }).select('+password');
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -97,7 +97,7 @@ exports.loginUser = async (req, res, next) => {
 // @access  Private
 exports.getMe = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await UserModel.findById(req.user.id);
 
         res.status(200).json({
             success: true,
@@ -113,7 +113,7 @@ exports.updateProfile = async (req, res, next) => {
         const { name, email, bio, website, socialLinks } = req.body;
 
         // Find user
-        const user = await User.findById(req.user.id);
+        const user = await UserModel.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({
@@ -156,7 +156,7 @@ exports.updatePassword = async (req, res, next) => {
         const { currentPassword, newPassword } = req.body;
 
         // Find user with password
-        const user = await User.findById(req.user.id).select('+password');
+        const user = await UserModel.findById(req.user.id).select('+password');
 
         // Check current password
         const isMatch = await user.matchPassword(currentPassword);
@@ -188,7 +188,7 @@ exports.forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await UserModel.findOne({ email });
 
         if (!user) {
             return res.status(404).json({
@@ -233,7 +233,7 @@ exports.resetPassword = async (req, res, next) => {
             .update(req.params.resetToken)
             .digest('hex');
 
-        const user = await User.findOne({
+        const user = await UserModel.findOne({
             resetPasswordToken,
             resetPasswordExpire: { $gt: Date.now() }
         });
@@ -273,7 +273,7 @@ exports.uploadProfileImage = async (req, res, next) => {
             });
         }
 
-        const user = await User.findById(req.user.id);
+        const user = await UserModel.findById(req.user.id);
 
         // Update profile image
         user.profileImage = req.file.path;
