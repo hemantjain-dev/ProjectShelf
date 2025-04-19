@@ -20,7 +20,6 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const exportRoutes = require('./routes/exportRoutes');
 const collaborationRoutes = require('./routes/collaborationRoutes');
-const { default: helmet } = require('helmet');
 
 // Initialize express app
 const app = express();
@@ -31,16 +30,17 @@ connectDB();
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(helmet())
-// app.use(cors({
-//     origin: ['https://projectshelfs.vercel.app', 'http://localhost:5173'],
-//     credentials: true,
-//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-// }));
-app.use(cors()); // https://projectshelfs.vercel.app/
+app.use(helmet());
+app.use(cors({
+    origin: ['https://projectshelfs.vercel.app', 'http://localhost:5173'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 app.use(cookieParser());
-app.use(morgan('dev'));
+morgan.token('body', (req) => JSON.stringify(req.body));
+morgan.token('error', (req, res) => res.statusCode >= 400 ? 'Error' : 'Success');
+app.use(morgan(':date[iso] :method :url :status :response-time ms - :error - :body'));;
 
 // We have to Add this after your middleware setup but before your routes for the Swagger UI to work correctly.
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
