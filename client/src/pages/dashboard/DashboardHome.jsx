@@ -17,27 +17,49 @@ const DashboardHome = () => {
     const [recentNotifications, setRecentNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
 
-                // Fetch dashboard stats
-                const statsResponse = await api.get('/api/analytics/dashboard');
-                setStats(statsResponse.data);
+                // Use Promise.allSettled to handle each request independently
+                const [statsResponse, projectsResponse, notificationsResponse] =
+                    await Promise.allSettled([
+                        api.get('/api/analytics/dashboard'),
+                        api.get('/api/projects/recent'),
+                        api.get('/api/notifications/recent')
+                    ]);
 
-                // Fetch recent projects
-                const projectsResponse = await api.get('/api/projects/recent');
-                setRecentProjects(projectsResponse.data);
+                // Handle stats response
+                if (statsResponse.status === 'fulfilled') {
+                    setStats(statsResponse.value.data || {
+                        projects: 0,
+                        caseStudies: 0,
+                        views: 0,
+                        comments: 0,
+                    });
+                }
 
-                // Fetch recent notifications
-                const notificationsResponse = await api.get('/api/notifications/recent');
-                setRecentNotifications(notificationsResponse.data);
+                // Handle projects response
+                if (projectsResponse.status === 'fulfilled') {
+                    setRecentProjects(projectsResponse.value.data || []);
+                }
+
+                // Handle notifications response
+                if (notificationsResponse.status === 'fulfilled') {
+                    setRecentNotifications(notificationsResponse.value.data || []);
+                }
+
+                // Only show error if all requests failed
+                if (statsResponse.status === 'rejected' &&
+                    projectsResponse.status === 'rejected' &&
+                    notificationsResponse.status === 'rejected') {
+                    setError('Failed to load dashboard data. Please try again later.');
+                }
 
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
-                setError('Failed to load dashboard data. Please try again later.');
+                // Don't set error here, we're handling it above
             } finally {
                 setLoading(false);
             }
