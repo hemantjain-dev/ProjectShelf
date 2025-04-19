@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const { connectDB } = require('./config/database');
 const { apiLimiter, authLimiter } = require('./middlewares/rateLimiter');
 const { swaggerUi, swaggerDocs } = require('./config/swagger');
@@ -19,6 +20,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const exportRoutes = require('./routes/exportRoutes');
 const collaborationRoutes = require('./routes/collaborationRoutes');
+const { default: helmet } = require('helmet');
 
 // Initialize express app
 const app = express();
@@ -29,7 +31,14 @@ connectDB();
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(helmet())
+app.use(cors({
+    origin: ['https://projectshelfs.vercel.app', 'http://localhost:5173'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+//app.use(cors()); // https://projectshelfs.vercel.app/
 app.use(cookieParser());
 app.use(morgan('dev'));
 
